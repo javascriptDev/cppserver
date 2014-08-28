@@ -1,1 +1,40 @@
-1sdasd23123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123123
+<html>
+
+<head>
+<title>cpp server test</title>
+<style>
+.a{
+position:absolute;
+width:100px;
+height:30px;
+background:red;
+color:white;
+left:0px;
+webkit-transition:1s all;
+transition:1s all;
+}
+</style>
+</head>
+<body>
+
+<script>
+
+window.onload=function(){
+	var a=document.querySelector(".a");
+	setInterval(function(){
+
+	if(parseInt(a.style.left)==400){
+		a.style.left="0px";
+	}else{
+		a.style.left="400px";
+	}
+
+	},3000);
+
+}
+</script>
+<div class="a">
+a cpp server
+</div>
+</body>
+</html>

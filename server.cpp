@@ -15,7 +15,7 @@
 #define QUEUE_LENGTH 20
 #define BUFFER_SIZE 1024
 
-
+using namespace std;
 int main(int argc,char **argv){
 
 
@@ -28,7 +28,7 @@ server_addr.sin_port=htons(SERVER_PORT);
 FILE *stream;
 
 int server_socket=socket(AF_INET,SOCK_STREAM,0);
-//printf("init socket begin\n");
+  printf("init socket begin\n");
   if(server_socket<0){
 	printf("create socket failed");
 	exit(1);
@@ -64,17 +64,24 @@ if(listen(server_socket,QUEUE_LENGTH)){
 	//print the request header
       //   printf("%s",strtok(buffer,"\n"));
 	char *p;
-	char *url;
-	p=strtok(buffer,"\n"); 
+	char *url;	
+	char *fileType;
+	p = strtok(buffer,"\n"); 
 	strtok(p," ");
-	url=strtok(NULL," ");
-        char *rurl=strtok(url,"/");    
-	printf(  "%s",rurl);
-	
+	//get the first line of buffer
+	url = strtok(NULL," ");
+        url = strtok(url,"/");
+  	string s = url;
+	fileType = strtok(url,".");    
+	fileType = strtok(NULL,".");
+
+	printf("requtst url is %s",s.c_str());
+	printf("file type is %s",fileType);
+		
 
 //	printf("\n%s",buffer);
 
-	if((stream=fopen(rurl,"r"))==NULL){
+	if((stream=fopen(s.c_str(),"r"))==NULL){
 		printf("the file was not opened \n");
 		exit(1);
 	}else{
@@ -97,8 +104,8 @@ if(listen(server_socket,QUEUE_LENGTH)){
 	lengthsize=fread(buffer,10,1024,stream);
 
 	char result[1024];
-	char *header="HTTP:/1.1 200 OK\r\nContent-type:text/html\r\nContent-Length:%d\r\n\r\n%s";
-	sprintf(result,strlen(result)+strlen(buffer),header,strlen(buffer),buffer);
+	const char *header="HTTP:/1.1 200 OK\r\nContent-type:text/html\r\nContent-Length:%d\r\n\r\n%s";
+	sprintf(result,header,strlen(buffer),buffer);
 	if(send(new_server_socket,result,strlen(result),0)<0){
 		printf("send file failed!\n");
 		continue;
