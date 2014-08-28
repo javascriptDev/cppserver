@@ -9,16 +9,35 @@
 #include <string.h> //for bzero
 #include <time.h> // for time_t and time
 #include <string.h>
-
+#include <map>
 
 #define SERVER_PORT 7754
 #define QUEUE_LENGTH 20
 #define BUFFER_SIZE 1024
 
 using namespace std;
+//mime
+
+class MIME{
+    public:
+        MIME(){
+            setMime();
+        }
+        string getMime(string key){return _mime[key];}
+    
+    private:
+        map<string,string> _mime;
+        void setMime(){
+            _mime["html"]="text/html";
+            _mime["css"]="text/css";
+            _mime["js"]="application/x-javascript";
+	    _mime[".ico"]="image/ico";	
+        }
+
+};
 int main(int argc,char **argv){
 
-
+MIME mime;
 struct sockaddr_in server_addr;
 bzero(&server_addr,sizeof(server_addr));
 server_addr.sin_family=AF_INET;
@@ -64,24 +83,20 @@ if(listen(server_socket,QUEUE_LENGTH)){
 	//print the request header
       //   printf("%s",strtok(buffer,"\n"));
 	char *p;
-	char *url;	
-	char *fileType;
+	char *urlP;	
+	char *fileTypeP;
 	p = strtok(buffer,"\n"); 
 	strtok(p," ");
 	//get the first line of buffer
-	url = strtok(NULL," ");
-        url = strtok(url,"/");
-  	string s = url;
-	fileType = strtok(url,".");    
-	fileType = strtok(NULL,".");
-
-	printf("requtst url is %s",s.c_str());
-	printf("file type is %s",fileType);
-		
-
+	urlP = strtok(NULL," ");
+        urlP = strtok(urlP,"/");
+  	string url = urlP;
+	fileTypeP = strtok(urlP,".");    
+	fileTypeP = strtok(NULL,".");
+	string fileType=fileTypeP;
 //	printf("\n%s",buffer);
 
-	if((stream=fopen(s.c_str(),"r"))==NULL){
+	if((stream=fopen(url.c_str(),"r"))==NULL){
 		printf("the file was not opened \n");
 		exit(1);
 	}else{
@@ -89,7 +104,7 @@ if(listen(server_socket,QUEUE_LENGTH)){
 	}
 	bzero(buffer,BUFFER_SIZE);
 
-	int lengthsize=0;
+///	int lengthsize=0;
 /*
 	while(lengthsize=fread(buffer,10,1024,stream)>0){
 		printf("%d",lengthsize);
@@ -101,11 +116,16 @@ if(listen(server_socket,QUEUE_LENGTH)){
 		bzero(buffer,BUFFER_SIZE);
 	}
 */
-	lengthsize=fread(buffer,10,1024,stream);
+	fread(buffer,10,1024,stream);
 
 	char result[1024];
-	const char *header="HTTP:/1.1 200 OK\r\nContent-type:text/html\r\nContent-Length:%d\r\n\r\n%s";
-	sprintf(result,header,strlen(buffer),buffer);
+	const char *header="HTTP:/1.1 200 OK\r\nContent-type:%s\r\nContent-Length:%d\r\n\r\n%s";
+
+	printf("url is%s ",url.c_str());
+	printf("file type is %s",fileType.c_str());
+	printf("mime is %s",mime.getMime(fileType).c_str());
+	
+	sprintf(result,header,mime.getMime(fileType).c_str(),strlen(buffer),buffer);
 	if(send(new_server_socket,result,strlen(result),0)<0){
 		printf("send file failed!\n");
 		continue;
