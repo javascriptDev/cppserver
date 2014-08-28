@@ -100,7 +100,7 @@ if(listen(server_socket,QUEUE_LENGTH)){
 	char *header="HTTP:/1.1 200 OK\r\nContent-type:text/html\r\nContent-Length:%d\r\n\r\n%s";
 	sprintf(result,strlen(result)+strlen(buffer),header,strlen(buffer),buffer);
 	if(send(new_server_socket,result,strlen(result),0)<0){
-		printf("send file failed! \n");
+		printf("send file failed!\n");
 		continue;
 	}
 //	printf("file readed!\n");	
