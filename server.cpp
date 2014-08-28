@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <cstdio>
 #include <netinet/in.h> ///for sockaddr_in
 #include <sys/types.h>  //for socket
 #include <unistd.h> //for close socket
@@ -69,7 +69,7 @@ if(listen(server_socket,QUEUE_LENGTH)){
 	strtok(p," ");
 	url=strtok(NULL," ");
         char *rurl=strtok(url,"/");    
-	printf("%s",rurl);
+	printf(  "%s",rurl);
 	
 
 //	printf("\n%s",buffer);
@@ -83,13 +83,25 @@ if(listen(server_socket,QUEUE_LENGTH)){
 	bzero(buffer,BUFFER_SIZE);
 
 	int lengthsize=0;
-	while(lengthsize=fread(buffer,1,1024,stream)>0){
+/*
+	while(lengthsize=fread(buffer,10,1024,stream)>0){
+		printf("%d",lengthsize);
 	//	printf("lengthsize= %d\n",lengthsize);
 		if(send(new_server_socket,buffer,lengthsize,0)<0){
 			printf("send file is failed!\n");
 			break;
 		}
 		bzero(buffer,BUFFER_SIZE);
+	}
+*/
+	lengthsize=fread(buffer,10,1024,stream);
+
+	char result[1024];
+	char *header="HTTP:/1.1 200 OK\r\nContent-type:text/html\r\nContent-Length:%d\r\n\r\n%s";
+	sprintf(result,strlen(result)+strlen(buffer),header,strlen(buffer),buffer);
+	if(send(new_server_socket,result,strlen(result),0)<0){
+		printf("send file failed! \n");
+		continue;
 	}
 //	printf("file readed!\n");	
 
@@ -107,3 +119,4 @@ if(listen(server_socket,QUEUE_LENGTH)){
 //	printf("close server_socket\n");
 	return 0;
 }
+
