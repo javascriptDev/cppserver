@@ -10,31 +10,15 @@
 #include <time.h> // for time_t and time
 #include <string.h>
 #include <map>
+#include "mime.cpp"
+#include <fstream>
+
 
 #define SERVER_PORT 7754
 #define QUEUE_LENGTH 20
 #define BUFFER_SIZE 1024
 
 using namespace std;
-//mime
-
-class MIME{
-    public:
-        MIME(){
-            setMime();
-        }
-        string getMime(string key){return _mime[key];}
-    
-    private:
-        map<string,string> _mime;
-        void setMime(){
-            _mime["html"]="text/html";
-            _mime["css"]="text/css";
-            _mime["js"]="application/x-javascript";
-	    _mime[".ico"]="image/ico";	
-        }
-
-};
 int main(int argc,char **argv){
 
 MIME mime;
@@ -80,8 +64,7 @@ if(listen(server_socket,QUEUE_LENGTH)){
 		printf("server recieve data failed\n");
 		exit(1);
 	}
-	//print the request header
-      //   printf("%s",strtok(buffer,"\n"));
+   //   printf("%s",strtok(buffer,"\n"));
 	char *p;
 	char *urlP;	
 	char *fileTypeP;
@@ -89,43 +72,56 @@ if(listen(server_socket,QUEUE_LENGTH)){
 	strtok(p," ");
 	//get the first line of buffer
 	urlP = strtok(NULL," ");
-        urlP = strtok(urlP,"/");
-  	string url = urlP;
+    urlP = strtok(urlP,"/");
+	printf("now url is %s\n",urlP);
+	string url = urlP;
 	fileTypeP = strtok(urlP,".");    
 	fileTypeP = strtok(NULL,".");
 	string fileType=fileTypeP;
 //	printf("\n%s",buffer);
 
-	if((stream=fopen(url.c_str(),"r"))==NULL){
-		printf("the file was not opened \n");
-		exit(1);
-	}else{
-	//	printf("file was opened \n");
-	}
-	bzero(buffer,BUFFER_SIZE);
+	//read request file
+	if(fileType=="ico"){
+		std::fstream image;
+	//	printf("begin read image");
+		image.open(url.c_str());
+		
+	//	printf("opened image");
+		image.seekg (0, ios::end);
+		int n = image.tellg();
+		image.seekg (0, ios::beg);
 
-///	int lengthsize=0;
-/*
-	while(lengthsize=fread(buffer,10,1024,stream)>0){
-		printf("%d",lengthsize);
-	//	printf("lengthsize= %d\n",lengthsize);
-		if(send(new_server_socket,buffer,lengthsize,0)<0){
-			printf("send file is failed!\n");
-			break;
+		char* res = new char[n];
+
+		image.read(res, n);
+		
+	//	printf("readed image");
+	//	buffer=res;
+	printf("ico %d",sizeof(res));
+	
+	}else{
+	
+		if((stream=fopen(url.c_str(),"r"))==NULL){
+			printf("the file was not opened \n");
+			exit(1);
+		}else{
+		//	printf("file was opened \n");
 		}
 		bzero(buffer,BUFFER_SIZE);
-	}
-*/
-	fread(buffer,10,1024,stream);
-
-	char result[1024];
-	const char *header="HTTP:/1.1 200 OK\r\nContent-type:%s\r\nContent-Length:%d\r\n\r\n%s";
-
-	printf("url is%s ",url.c_str());
-	printf("file type is %s",fileType.c_str());
-	printf("mime is %s",mime.getMime(fileType).c_str());
 	
+		fread(buffer,10,1024,stream);
+	}
+	
+	char result[1024];
+	const char *header="HTTP:/1.1 200 OK\r\ncontent-type:%s\r\nContent-Length:%d\r\n\r\n%s";
+	
+	printf("url is %s\n ",url.c_str());
+	printf("file type is %s\n",fileType.c_str());
+	//generate http response 
 	sprintf(result,header,mime.getMime(fileType).c_str(),strlen(buffer),buffer);
+
+printf("response:%s",result);
+	//send resource to client
 	if(send(new_server_socket,result,strlen(result),0)<0){
 		printf("send file failed!\n");
 		continue;
