@@ -56,7 +56,7 @@ if(listen(server_socket,QUEUE_LENGTH)){
 		printf("server accept failed\n");
 		break;
 	}
-	printf("accept a client request\n");
+//	printf("accept a client request\n");
 	char buffer[BUFFER_SIZE];
 	bzero(buffer,BUFFER_SIZE);
 	length=recv(new_server_socket,buffer,BUFFER_SIZE,0);
@@ -72,42 +72,44 @@ if(listen(server_socket,QUEUE_LENGTH)){
 	strtok(p," ");
 	//get the first line of buffer
 	urlP = strtok(NULL," ");
-    urlP = strtok(urlP,"/");
-	printf("now url is %s\n",urlP);
+	 urlP = strtok(urlP,"/");
+//	printf("now url is %s\n",urlP);
 	string url = urlP;
 	fileTypeP = strtok(urlP,".");    
 	fileTypeP = strtok(NULL,".");
 	string fileType=fileTypeP;
-//	printf("\n%s",buffer);
-
 	//read request file
+	bzero(buffer,BUFFER_SIZE);
 	if(fileType=="ico"){
+	/*
+	printf("file type is %s\n",fileType.c_str());
 		std::fstream image;
 	//	printf("begin read image");
 		image.open(url.c_str());
-		
-	//	printf("opened image");
-		image.seekg (0, ios::end);
-		int n = image.tellg();
-		image.seekg (0, ios::beg);
+		if(image){
+			image.seekg (0, ios::end);
+			int n = image.tellg();
+			image.seekg (0, ios::beg);
+			printf("image size is %d",n);
+			char* res = new char[70000];
 
-		char* res = new char[n];
-
-		image.read(res, n);
+			image.read(res, n);
 		
-	//	printf("readed image");
-	//	buffer=res;
-	printf("ico %d",sizeof(res));
-	
+			printf("image is readed\n");
+			printf("res is %s\n",res);
+		//	printf("image is %s\n",buffer);	
+		
+		}else{
+			printf("read image failed");
+		}
+		*/
 	}else{
-	
 		if((stream=fopen(url.c_str(),"r"))==NULL){
 			printf("the file was not opened \n");
 			exit(1);
 		}else{
 		//	printf("file was opened \n");
 		}
-		bzero(buffer,BUFFER_SIZE);
 	
 		fread(buffer,10,1024,stream);
 	}
@@ -115,12 +117,10 @@ if(listen(server_socket,QUEUE_LENGTH)){
 	char result[1024];
 	const char *header="HTTP:/1.1 200 OK\r\ncontent-type:%s\r\nContent-Length:%d\r\n\r\n%s";
 	
-	printf("url is %s\n ",url.c_str());
-	printf("file type is %s\n",fileType.c_str());
 	//generate http response 
 	sprintf(result,header,mime.getMime(fileType).c_str(),strlen(buffer),buffer);
 
-printf("response:%s",result);
+//	printf("response:%s",result);
 	//send resource to client
 	if(send(new_server_socket,result,strlen(result),0)<0){
 		printf("send file failed!\n");
